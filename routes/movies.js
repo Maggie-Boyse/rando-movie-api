@@ -5,7 +5,6 @@ const knex = require("knex")(require("../knexfile"));
 router.get("/", async (req, res) => {
   try {
     const moviesData = await knex("horror_movies")
-      // .join("users", "users.id", "user_id")
       .select(
         "horror_movies.id",
         "horror_movies.title",
@@ -26,12 +25,28 @@ router.post("/", async (req, res) => {
     const newMovieData = req.body;
     console.log(newMovieData);
     await knex("horror_movies")
-      //   .join("users", "users.id", "username")
       .insert(newMovieData);
     res.status(200).json(newMovieData);
   } catch (error) {
     console.error("Error sending movie data:", error);
     res.status(500).json(error);
+  }
+});
+
+router.delete("/", async (req, res) => {
+  try {
+    const movieId = req.params.id;
+    const movieItem = await knex("horror_movies")
+      .where({ id: movieId })
+      .first();
+    if (!movieItem) {
+      return res.status(404).json({ message: "movie not found" });
+    }
+    await knex("horror_movies").where({ id: movieId }).del();
+    res.sendStatus(204);
+  } catch (error) {
+    console.error("Error deleting movie", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
